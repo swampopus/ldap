@@ -1,0 +1,27 @@
+Changelog for LDAP module (5.x)
+===============================
+
+2020-09-22
+  Added an option to convert a user's DN to lowercase. Also added more descriptive
+  messages if a login fails (ex: from expired account, or need to change password).
+  
+
+2020-02-18
+  Added LDAP debug form, so users can test to see what results come back from a username in LDAP.  Modified
+  some logic to make this work.  Set as a sub tab under the LDAP settings tab.
+
+
+2019-07-17
+  Added ability to only allow certain users in to LDAP.
+
+
+2019-07-03
+  Tweaks to settings documentation.
+  
+
+2019-03-20
+  Added functionality to recognize if logins have been disabled for the system.
+
+
+2016-01-22
+  Initial conversion from 4.x branch to 5.x branch.

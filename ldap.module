@@ -611,13 +611,27 @@ function ldap_settings_form() {
   $form["ldap_restrict_to_users"] = array(
     "label" => t("Restrict to only the following users:"),
     "type" => "textarea",    
+    "prefix" => "<hr>",
     "value" => variable_get("ldap_restrict_to_users", ""),
     "description" => t("Enter usernames (or email addresses-- only usernames will be used) one per line.  These will be the only users who will be allowed to log in.  <u>admin</u> will always be allowed.
-                        To disable, simply erase this list.  If *anything* is in this box, then this restriction will be enabled."),
+                        To disable, simply erase this list.  If *anything* is in this box, then this restriction will be enabled.
+                        <br><b>If you wish to use the restriction setting below, this box must be EMPTY.</b>"),
     
   );
 
-  
+    
+  $form["ldap_restrict_to_students_table"] = array(
+    "label" => t("Restrict to students in the <i>students</i> table:"),
+    "type" => "checkboxes",
+    "options" => array("yes" => t("Yes, restrict based on the <i>students</i> table")),
+    "value" => variable_get("ldap_restrict_to_students_table", array()),
+    "description" => t("If checked, only students who <b>already exist</b> in the <i>students</i> database table (based on cwid field)
+                        will be permitted to log in.  This will have no effect on non-student users.
+                        <br><b>This will only work if the above Restrict to Users box is empty.</b>
+                        <br>If you are unsure what to check, or if you want all LDAP users to be able to log in, whether or not they have logged in before,
+                        then leave this box UNCHECKED."),
+  );
+      
   
   
   
@@ -671,7 +685,7 @@ function ldap_login_form_validate(&$form, &$form_state) {
     return;
   }    
   
-  // Are we restricting usernames?  If so, make sure the username is one that we are allowing in.
+  // Are we restricting users?  If so, make sure the username is one that we are allowing in.
   $restrict = trim(variable_get("ldap_restrict_to_users", ""));
   if ($restrict != "") {
     $bool_in_list = FALSE;
@@ -696,10 +710,12 @@ function ldap_login_form_validate(&$form, &$form_state) {
   }
   
   
-  
-  
-  
-  
+  $temp = variable_get("ldap_restrict_to_students_table", array());
+  $bool_resrict_to_students_table = FALSE;
+  if (@$temp['yes'] === 'yes') {
+    $bool_resrict_to_students_table = TRUE;
+  }  
+     
   
   
   // Let's check in the usual way first:
@@ -732,6 +748,7 @@ function ldap_login_form_validate(&$form, &$form_state) {
       return;
     }
 
+    
     $f_name_field = trim(variable_get("ldap_f_name_field", ""));
     $l_name_field = trim(variable_get("ldap_l_name_field", ""));
     $f_name = ucwords(strtolower($result[$f_name_field][0]));
@@ -745,6 +762,19 @@ function ldap_login_form_validate(&$form, &$form_state) {
       // If this is the case, we want to give precidence to faculty
       if ($if_faculty) $is_student = FALSE;
     }
+
+
+    if ($is_student && $bool_resrict_to_students_table) {
+      // We need to make sure that this CWID is already in the students table. If not, we kick them out.
+      $cwid_check = db_result(db_query("SELECT cwid FROM students WHERE cwid = ?", array($cwid)));
+      if ($cwid_check != $cwid) {
+        // Meaning, it was not found.
+        form_error("password", t("Sorry, but not all users are allowed to use this system at this time.  If you
+                                  need access, please contact your supervisor or advisor."));
+        return;                
+      }
+    }
+
     
     // Let's update the users table with this new information for this user.
     

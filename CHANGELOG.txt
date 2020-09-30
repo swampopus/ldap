@@ -1,6 +1,10 @@
 Changelog for LDAP module (5.x)
 ===============================
 
+2020-09-30
+  Added new restriction option: restrict student access only to those CWIDs in the students table.
+  
+
 2020-09-22
   Added an option to convert a user's DN to lowercase. Also added more descriptive
   messages if a login fails (ex: from expired account, or need to change password).

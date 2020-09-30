@@ -716,6 +716,10 @@ function ldap_login_form_validate(&$form, &$form_state) {
     $bool_resrict_to_students_table = TRUE;
   }  
      
+
+  $allowed_ranks_str = variable_get("allowed_student_ranks", "FR, SO, JR, SR");
+  $allowed_ranks = csv_to_array($allowed_ranks_str);
+
   
   
   // Let's check in the usual way first:
@@ -725,6 +729,19 @@ function ldap_login_form_validate(&$form, &$form_state) {
   $stored_hash = @$cur["password"];
   if (user_check_password($password, $stored_hash)) {
     // Yes, we found a match, so we will just use this.
+    
+    // Check to make sure this student's rank_code is allowed.
+    if (intval($cur['is_student']) === 1) {
+      $rank_code = db_result(db_query("SELECT rank_code FROM students WHERE cwid = ?", array($cur['cwid'])));
+      if (!in_array($rank_code, $allowed_ranks)) {
+        
+        form_error("password", t("Sorry, your rank/classification is %rc.  At this time FlightPath is only available to students
+                                  in the following ranks/classifications: @ranks_str", array("%rc" => $rank_code, "@ranks_str" => $allowed_ranks_str)));
+        return;    
+        
+      }
+    }        
+    
     
     $form_state["db_row"] = $cur;
     $form_state["passed_authentication"] = TRUE;
@@ -774,6 +791,20 @@ function ldap_login_form_validate(&$form, &$form_state) {
         return;                
       }
     }
+
+
+    // If this is a student, does this student have an accepted "allowed rank" (ie, FR, SO, JR, etc)?
+    if ($is_student) {
+      $rank_code = db_result(db_query("SELECT rank_code FROM students WHERE cwid = ?", array($cwid)));
+      if (!in_array($rank_code, $allowed_ranks)) {
+        
+        form_error("password", t("Sorry, your rank/classification is %rc.  At this time FlightPath is only available to students
+                                  in the following ranks/classifications: @ranks_str", array("%rc" => $rank_code, "@ranks_str" => $allowed_ranks_str)));
+        return;    
+        
+      }
+    }
+
 
     
     // Let's update the users table with this new information for this user.

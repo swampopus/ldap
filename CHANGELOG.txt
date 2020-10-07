@@ -4,6 +4,8 @@ Changelog for LDAP module (5.x)
 2020-09-30
   Added new restriction option: restrict student access only to those CWIDs in the students table.
   
+  Also fixed issue where restricted student rank (from settings) wasn't being respected.
+  
 
 2020-09-22
   Added an option to convert a user's DN to lowercase. Also added more descriptive

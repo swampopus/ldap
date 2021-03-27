@@ -22,7 +22,7 @@ function ldap_menu() {
       "page_hide_report_error" => TRUE,
       "menu_links" => array(         
         0 => array(
-          "text" => "Back to main menu",
+          "text" => "Admin Console",
           "path" => "admin-tools/admin",
         ),
       ),
@@ -45,7 +45,7 @@ function ldap_menu() {
       "page_hide_report_error" => TRUE,
       "menu_links" => array(         
         0 => array(
-          "text" => "Back to main menu",
+          "text" => "Admin Console",
           "path" => "admin-tools/admin",
         ),
       ),
@@ -850,7 +850,9 @@ function ldap_login_form_validate(&$form, &$form_state) {
     $cur = db_fetch_array($res);
     $form_state["db_row"] = $cur;
     $form_state["passed_authentication"] = TRUE;
-    return;
+    $_SESSION['fp_logged_in_external'] = TRUE;   // keep track that we logged in using an external mechanism.
+    
+    return; 
        
   }
 
